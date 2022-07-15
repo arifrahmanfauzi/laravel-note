@@ -63,25 +63,23 @@ Result
 }
 ```
 
-
-
 ### **Email Verification**
 
 Implement MustVerifyEmail in User Model
 
 ```php
 <?php
- 
+
 namespace App\Models;
- 
+
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
- 
+
 class User extends Authenticatable implements MustVerifyEmail
 {
     use Notifiable;
- 
+
     // ...
 }
 ```
@@ -140,4 +138,53 @@ public function register(Request $request): \Illuminate\Http\Response|\Illuminat
         event(new Registered($user));
         return response(['user' => $user]);
     }
+```
+
+### **Laravel Custom Email Notification**
+
+This is some tips if you want to custom email templates.
+
+First things is overwrite method *sendEmailVerificationNotification()* in **User** model.
+
+```php
+<?php
+
+class User extends Authenticatable implements MustVerifyEmail 
+{
+    public function sendEmailVerificationNotification(){
+        $this->notify(new VerifyEmailNotification());
+    }
+}
+```
+
+then create a notification class.
+
+`php artisan make:notification VerifyEmailNotification` 
+
+and in VerifyEmailNotification we will extend *VerifyEmail()* .
+
+```php
+<?php
+class VerifyEmailNotification extends VerifyEmail
+{
+    public function toMail($notifiable)
+    {
+    $verificationUrl = $this->verificationUrl($notifiable);
+
+    return (new MailMessage)->view('emails.user.verify', ['url' => $verificationUrl]);
+    }
+}
+```
+
+then create 2 endpoint 
+
+```php
+Route::get('email/verify/{id}',[AuthController::class,'verify'])->name('verification.verify');
+Route::get('email/resend',[AuthController::class,'resend'])->name('verification.resend');
+```
+
+in AuthController.
+
+```php
+
 ```
