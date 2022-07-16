@@ -188,3 +188,33 @@ in AuthController.
 ```php
 
 ```
+
+
+
+### Api Response
+
+Convert all response to JSON automatically with this middleware
+
+`php artisan make:middleware ForceJsonResponse`
+
+then in that file *ForceJsonResponse.php*
+
+```php
+public function handle($request, Closure $next)
+{
+    $request->headers->set('Accept', 'application/json');
+    return $next($request);
+}
+```
+
+then optional you can add in global *app/Http/Kernal.php* class
+
+```php
+'json.response' => \App\Http\Middleware\ForceJsonResponse::class,
+```
+
+then you can addet it to the `$middleware` array in *Kernel.php* file
+
+```php
+\App\Http\Middleware\ForceJsonResponse::class,
+```
