@@ -189,8 +189,6 @@ in AuthController.
 
 ```
 
-
-
 ### Api Response
 
 Convert all response to JSON automatically with this middleware
@@ -217,4 +215,72 @@ then you can addet it to the `$middleware` array in *Kernel.php* file
 
 ```php
 \App\Http\Middleware\ForceJsonResponse::class,
+```
+
+
+
+### Create mail using markdown format
+
+this is for simple templating mail using markdown template.
+
+first type this command
+
+`php artisan make:mail Invoice --markdown=emails.user.invoice`
+
+that will generate invoice blade template in `resources\views\emails\user\invoice.blade.php` 
+
+you see there [Mail - Laravel - The PHP Framework For Web Artisans](https://laravel.com/docs/9.x/mail#writing-markdown-messages) for available markdown component
+
+and then open *invoice.php* in `app\Mail\Invoice.php` then you can custom email structure like this
+
+```php
+<?php
+
+namespace App\Mail;
+
+class Invoice extends Mailable{
+    //example static data
+    private array $data = ['name' => 'human', 'link' => 'https://google.com','token' => '12d1dwer1yy^$#@'];
+     public function build(): static
+    {
+        return $this->from('example@email.id')->subject('Invoice')->markdown('emails.user.invoice',$this->data);
+    }
+}
+```
+
+and then go to mail markdown template in `resources\views\emails\user\invoice.blade.php` and custom it. 
+
+```php
+@component('mail::message')
+# Your Invoice
+Hello {{ $name }}
+The body of your message.
+
+@component('mail::button', ['url' => $link, 'color'=>'primary'])
+Button Text
+@endcomponent
+this is your token : {{$token}}
+Thanks,<br>
+{{ config('app.name') }}
+@component('mail::panel')
+    ## This is mail Panel <br>
+@endcomponent
+@endcomponent
+
+```
+
+then add this code in your controller file.
+
+```php
+namespace App\Http\Controllers;
+
+use App\Mail\Invoice;
+use Illuminate\Support\Facades\Mail
+
+...
+
+public function sendEmail(){
+        Mail::to('example@mail.com')->send(new Invoice());
+        return "success";
+}
 ```
